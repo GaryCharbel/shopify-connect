@@ -91,6 +91,10 @@ Then change the quantity in the Shopify admin and watch the webhook update
 - **Queue:** process webhooks through a queue so bursts and retries are safe.
 - **Multiple locations:** key the link by `(inventoryItemId, locationId)`.
 
+## Integrating into VIDO
+
+See [docs/VIDO-INTEGRATION.md](docs/VIDO-INTEGRATION.md): one app for many stores (OAuth), where it plugs into `hamster-pos-system` and `vi-do-frontend`, and the order of work.
+
 ## Docs
 
 - [inventorySetQuantities](https://shopify.dev/docs/api/admin-graphql/2026-07/mutations/inventorySetQuantities)

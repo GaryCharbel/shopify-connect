@@ -28,6 +28,50 @@ organization, so it doesn't fit VIDO.
 ([Shopify: app distribution](https://shopify.dev/docs/apps/launch/distribution),
 [privacy compliance webhooks](https://shopify.dev/docs/apps/build/compliance/privacy-law-compliance))
 
+### Yes: one Shopify app for every VIDO shop
+
+VIDO needs **one** Shopify app, shared by every merchant. In Shopify terms that is
+a **public app** (Public distribution), which can be installed on any number of
+stores. Every store installs the same app, but each install gets its own access
+token. VIDO stores those per shop.
+
+```
+            one "VIDO" Shopify app (one client ID + secret)
+                 │
+   ┌─────────────┼──────────────┬──────────────┐
+   ▼             ▼              ▼              ▼
+store A       store B        store C        store D      ← each merchant clicks "Connect Shopify"
+token A       token B        token C        token D      ← saved in shopify_connection, one row per VIDO shop
+```
+
+What it takes:
+
+1. **Create the app in a Shopify Partner organization** (free at partners.shopify.com).
+   It can't be an app created inside a merchant's own store org. For example,
+   `clubsix-cli` lives in the Club Six Hub org and can only ever serve that store.
+   Only Partner-org apps show the *Distribution* card where you choose Public.
+2. **Choose Public distribution.** This choice is permanent. If you keep separate dev
+   and production apps, choose it on the production app.
+3. **Pass Shopify app review** before other merchants can install it. You don't have to
+   list the app publicly in the App Store, but the review still applies.
+4. **Install with OAuth** (authorization code grant), as in the flow below. There's no copying of keys by hand.
+5. **Implement the required webhooks:** `app/uninstalled` (mark the connection
+   UNINSTALLED and stop syncing) and the mandatory privacy webhooks `customers/data_request`,
+   `customers/redact` and `shop/redact`. They must reply 200 and act within 30 days.
+   This app only stores stock data, so the handlers are small, but review checks them.
+
+**Before approval:** a public app can already be installed on **development stores**,
+so the whole flow can be built and tested on a free dev store while the review is pending.
+
+**Not suitable:** *Custom distribution* skips review, but it is limited to one store,
+or stores in the same Shopify Plus organization. It can't cover all VIDO merchants.
+
+**Still to confirm against the App Store requirements before submitting:**
+- whether the app must be *embedded* (open inside the Shopify admin) or can send merchants to the VIDO portal;
+- whether Shopify requires its Billing API if VIDO charges for the integration.
+
+Run Shopify's pre-submission checklist on the app before submitting.
+
 **Fallback with no review:** each merchant creates their own Dev Dashboard app and
 pastes its client ID and secret into VIDO. That is how the scaffold works today. It's
 fine for a pilot shop, but too clunky to roll out widely.

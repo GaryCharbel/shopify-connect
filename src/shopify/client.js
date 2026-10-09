@@ -23,9 +23,13 @@ export async function shopifyGraphQL(query, variables = {}, attempt = 1) {
     return shopifyGraphQL(query, variables, attempt + 1);
   }
 
+  if (!res.ok) {
+    throw new Error(`Shopify ${res.status}: ${await res.text()}`);
+  }
+
   const body = await res.json();
 
-  const throttled = body.errors?.some((e) => e.extensions?.code === 'THROTTLED');
+  const throttled = Array.isArray(body.errors) && body.errors.some((e) => e.extensions?.code === 'THROTTLED');
   if (throttled && attempt <= 5) {
     await sleep(1000 * attempt);
     return shopifyGraphQL(query, variables, attempt + 1);
